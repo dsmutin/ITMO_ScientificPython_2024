@@ -45,7 +45,10 @@ git switch HW1
 git commit -a -m "task 2.11: merge"
 git merge testing
 git push origin HW1
-### 3 branches, HW1 with all changes, testing without changed 2.7, main with README.md only
+### 3 branches, 
+#### HW1 with all changes, 
+#### testing without changed 2.7, 
+#### main with README.md only
 
 ## 12
 git revert -m 1 HEAD
@@ -65,7 +68,9 @@ git push origin testing
 ## 15
 git checkout HW1
 git merge testing
-# All is fine.... I think that there should be an issue that different files in testing branch and HW1 branch have different changes, so maybe I have a problem in revert command.
+### All is fine.... 
+#### I think that there should be an issue that different files in testing branch and HW1 branch have different changes, so maybe I have a problem in revert command.
+#### Why this conflict is avoiding, I don't know...
 git push origin HW1
 
 git add command_list.md
