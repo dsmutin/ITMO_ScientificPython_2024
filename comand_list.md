@@ -1,8 +1,11 @@
 # part 1
+```{bash}
 git clone https://github.com/dsmutin/ITMO_ScientificPython_2024
+```
 
 # part2
 
+```{bash}
 ## 1
 mv *txt ./ITMO_ScientificPython_2024/
 cd ./ITMO_ScientificPython_2024/
@@ -45,11 +48,14 @@ git switch HW1
 git commit -a -m "task 2.11: merge"
 git merge testing
 git push origin HW1
-### 3 branches, 
-#### HW1 with all changes, 
-#### testing without changed 2.7, 
-#### main with README.md only
+```
+3 branches, 
+- HW1 with all changes, 
+- testing without changed 2.7, 
+- main with README.md only
 
+
+```{bash}
 ## 12
 git revert -m 1 HEAD
 git status
@@ -68,10 +74,36 @@ git push origin testing
 ## 15
 git checkout HW1
 git merge testing
-### All is fine.... 
-#### I think that there should be an issue that different files in testing branch and HW1 branch have different changes, so maybe I have a problem in revert command.
-#### Why this conflict is avoiding, I don't know...
+git push origin HW1
+```
+
+Current state: 
+HW1/testing: hw1 #7/3; revert #12/9; revert_merge #14/14
+File revert in HW1 without changes.
+It happends because we revert this changes at stage 12, while changed file stayed only in testing branch.
+
+I thought that it is an expected behavior before initial pull request))
+
+Merge works with the last commits, so if some changes (and revert consider as change) happends, it use the last commited file. To solve this problem, we can revert revert itself, or update file revert in testing branch
+
+```{bash}
+## 16
+git revert ab53698d61c08a74daf13c49ccfe2314bc777c48
+cat test_revert.txt #2 lines
+
+git push origin HW1
+```
+
+All merged successfully, so - delete testing branch
+
+```{bash}
+git push origin --delete testing
+## 17
 git push origin HW1
 
 git add command_list.md
 git push origin HW1
+
+## 18
+Here we are
+```
