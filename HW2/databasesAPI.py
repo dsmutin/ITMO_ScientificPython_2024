@@ -3,8 +3,6 @@ import requests
 import json
 
 # UNIPROT
-
-
 def get_uniprot(ids: list):
     accessions = ','.join(ids)
     endpoint = "https://rest.uniprot.org/uniprotkb/accessions"
@@ -63,16 +61,34 @@ def ensembl_parse_response(resp: dict):
 
 # Get database query
 def database_explorer(inp: list):
-    type_uniprot = all(re.search({r'\W{6}'}, 'r' + ID) for ID in inp)
-    type_ensembl = all(re.search({r'ENS.*{11}'}, 'r' + ID) for ID in inp)
+    type_uniprot = all(re.fullmatch("[A-Z]\w{5}|\w{7}|\w{9}", ID) for ID in inp)
+    type_ensembl = all(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z]*_)\w\w?\d{11}', ID) for ID in inp)
 
     if type_uniprot:
         vals = get_uniprot(inp)
         res = uniprot_parse_response(vals)
+
+        for i in inp:
+            print(i)
+            print('organism:', res[i]['organism'])
+            print('geneInfo:', res[i]['geneInfo'])
+            print('sequenceInfo', res[i]['sequenceInfo'])
+            print('type:', res[i]['type'], "\n")
         return(res)
     elif type_ensembl:
-        vals = get_uniprot(inp)
-        res = uniprot_parse_response(vals)
+        vals = get_ensembl(inp)
+        res = ensembl_parse_response(vals)
+        
+        for i in inp:
+            print(i)
+            print('organism:', res[i]['organism'])
+            print('geneInfo:', res[i]['geneInfo'])
+            print('sequenceInfo', res[i]['sequenceInfo'])
+            print('type:', res[i]['type'], "\n")
         return(res)
     else:
         return ValueError("Wrong format")
+        
+        
+inp = input("Write database IDs:").split()
+database_explorer(inp)
