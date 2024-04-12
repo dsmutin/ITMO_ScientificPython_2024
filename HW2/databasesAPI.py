@@ -61,8 +61,11 @@ def ensembl_parse_response(resp: dict):
 
 # Get database query
 def database_explorer(inp: list):
-    type_uniprot = all(re.fullmatch("[A-Z]\w{5}|\w{7}|\w{9}", ID) for ID in inp)
-    type_ensembl = all(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z]*_)\w\w?\d{11}', ID) for ID in inp)
+
+    # I have finally found uniprot.org/help/accession_numbers and re-visit ensembl.org/info/genome/stable_ids/prefixes.html, so now it should finally work) My regex was the same with the regex on the site.
+
+    type_uniprot = all(re.fullmatch("[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}", ID) for ID in inp)
+    type_ensembl = all(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z0-9]*_)[A-Z]{1,2}\d{11}', ID) for ID in inp)
 
     if type_uniprot:
         vals = get_uniprot(inp)
