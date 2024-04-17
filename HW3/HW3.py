@@ -1,5 +1,4 @@
-import requests
-from bs4 import BeautifulSoup
+import openmeteo_requests
 
 class IncreaseSpeed():
     '''
@@ -161,32 +160,27 @@ class Car():
 
     @staticmethod
     def show_weather():
-        # for now it does not work, but I try to fix it soon. the problem is in bs4 usage
-        #idea from https://www.geeksforgeeks.org/python-find-current-weather-of-any-city-using-openweathermap-api/
-        headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-        res = requests.get(
-        f'https://www.google.com/search?q=st.+petersburg+weather&oq=st.+petersburg+weather&aqs=chrome.0.35i39l2j0l4j46j69i60.6128j1j7&sourceid=chrome&ie=UTF-8', headers=headers)
-        soup = BeautifulSoup(res.text, 'html.parser')
-        info = str(soup.find("wob_dc"))
-        weather = str(soup.select('wob_t'))
+        openmeteo = openmeteo_requests.Client()
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+        "latitude": 59.9386, # for St.Petersburg
+        "longitude": 30.3141, # for St.Petersburg
+        "current": ["temperature_2m", "apparent_temperature", "rain", "wind_speed_10m"],
+        "wind_speed_unit": "ms",
+        "timezone": "Europe/Moscow"
+        }
 
-        print(f'There is no sunshine in St. Petersburg,\nbut current weather is:')
-        print(weather+"°C")
-        print(info)
-        # displays weather conditions
+        response = openmeteo.weather_api(url, params=params)[0]
 
+        # The order of variables needs to be the same as requested in params->current!
+        current = response.Current()
+        current_temperature_2m = current.Variables(0).Value()
+        current_apparent_temperature = current.Variables(1).Value()
+        current_rain = current.Variables(2).Value()
+        current_wind_speed_10m = current.Variables(3).Value()
 
-# Tests
-a=Car(200)
-
-Car.total_cars()
-
-a.accelerate(120)
-a.accelerate()
-a.brake(50)
-a.brake()
-a.parking()
-
-Car.total_cars()
-Car.show_weather()
+        print(f'\nThere is no sunshine in St. Petersburg, but current weather is:')
+        print(f"temperature: {round(current_temperature_2m, 1)} °C")
+        print(f"apparent temperature: {round(current_apparent_temperature, 1)} °C")
+        print(f"rain: {current_rain} mm")
+        print(f"wind speed: {round(current_wind_speed_10m, 1)} m/s")
