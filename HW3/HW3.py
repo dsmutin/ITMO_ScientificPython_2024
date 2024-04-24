@@ -81,7 +81,6 @@ class Car():
         self.current_speed = current_speed
         self.state = state
         Car.car_number += 1
-        pass
 
     def accelerate(self, upper_border=None):
         if self.state:
@@ -111,7 +110,6 @@ class Car():
         # print a message at each speed increase
         # else increase the speed once
         # return the message with current speed
-        pass
 
     def brake(self, lower_border=None):
         if self.state:
@@ -139,7 +137,6 @@ class Car():
         # print a message at each speed decrease
         # else increase the speed once
         # return the message with current speed
-        pass
 
     # the next three functions you have to define yourself
     # one of the is class method, one - static and one - regular method (not necessarily in this order, it's for you to think)
