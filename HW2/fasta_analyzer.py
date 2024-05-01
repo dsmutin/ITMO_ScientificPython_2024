@@ -64,6 +64,25 @@ def ensembl_parse_response(resp: dict):
     return output
 
 # Get database query
+def database_match(inp: list):
+    seq = list()
+    fasta = dict()
+    description = dict()
+    for i in inp:
+        seq += [re.search(r'(?<=\|).*(?=\|)', str(i.id)).group()]
+        fasta[seq[-1]] = i.seq 
+        description[seq[-1]] = i.description
+
+    type_uniprot = all(re.fullmatch("[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}", ID) for ID in seq)
+    type_ensembl = all(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z0-9]*_)[A-Z]{1,2}\d{11}', ID) for ID in seq)
+
+    if type_uniprot:
+        return "Protein", "UNIPROT", seq, description, fasta
+    elif type_ensembl:
+        return "DNA", "ENSEMBL", seq, description, fasta
+    else:
+        return ValueError("Wrong format"), "Error", seq, description, fasta
+
 def database_explorer(inp: list):
 
     # I have finally found uniprot.org/help/accession_numbers and re-visit ensembl.org/info/genome/stable_ids/prefixes.html, so now it should finally work) My regex was the same with the regex on the site.
@@ -81,7 +100,7 @@ def database_explorer(inp: list):
             print('geneInfo:', res[i]['geneInfo'])
             print('sequenceInfo', res[i]['sequenceInfo'])
             print('type:', res[i]['type'], "\n")
-        return(res)
+        return "UNIPROT", res
     elif type_ensembl:
         vals = get_ensembl(inp)
         res = ensembl_parse_response(vals)
@@ -92,37 +111,58 @@ def database_explorer(inp: list):
             print('geneInfo:', res[i]['geneInfo'])
             print('sequenceInfo', res[i]['sequenceInfo'])
             print('type:', res[i]['type'], "\n")
-        return(res)
+        return "ENSEMBL", res
     else:
-        return ValueError("Wrong format")
+        return "ERROR", ValueError("Wrong format")
 
 # HW 2_2
 def seqkit_call(path):
-    path = "/home/dsmutin/bioinformatics/ITMO/scipython/ITMO_ScientificPython_2024/HW2/HW2/hw_file1.fasta"
+    #path = "hw_file1.fasta"
+
     seqkit = subprocess.run(("seqkit", "stats", path, "-a"),
                             capture_output=True,
                             text=True)
     
     #catch error
     if seqkit.stderr != "":
-        print ("Catched error: ", seqkit.stderr)
-        return 
+        return ("Catched error: ", seqkit.stderr)
     else:
         tmp = seqkit.stdout.split()
         t2 = (len(tmp)//2)
         tmp1 = tmp[0:t2]
         tmp2 = tmp[t2:len(tmp)]
+        tmp = dict()
         for i in zip(tmp1, tmp2):
             print(i[0], "\t", i[1])
+            tmp[i[0]] = i[1]
 
+        return(tmp['type'])
 
 def biopython_parser(path):
-    pass
+    path = "hw_file1.fasta"
+    sequences = SeqIO.parse(path, "fasta")
 
+    d1, d2, seq, description, fasta = database_match(sequences)
 
+    if (d2 == "ERROR"):
+        print("Error occured; please check input format")
+    else:
+        res = dict()
+        res["seqkit"] = seqkit_call(path)
+        tmp_seqs = dict()
+        for s in seq:
+            tmp_s = dict()
+            tmp_s["description"]  = description[s]
+            tmp_s["fasta"] = fasta[s]
+            tmp_s["DB_name"], tmp_s["DB_info"] = database_explorer(s)
+            tmp_seqs[s] = tmp_s
 
+        res["seqs"] = tmp_seqs
+        print(res)
+        return(res)
 
 
 # TEST SYSTEM
 inp = input("Write path to fasta: ").split()
-seqkit_call(str(inp))
+for i in inp:
+    biopython_parser(i)
