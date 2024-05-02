@@ -87,14 +87,14 @@ def database_explorer(inp: list):
 
     # I have finally found uniprot.org/help/accession_numbers and re-visit ensembl.org/info/genome/stable_ids/prefixes.html, so now it should finally work) My regex was the same with the regex on the site.
 
-    type_uniprot = all(re.fullmatch("[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}", ID) for ID in inp)
-    type_ensembl = all(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z0-9]*_)[A-Z]{1,2}\d{11}', ID) for ID in inp)
+    type_uniprot = bool(re.fullmatch("[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}", inp))
+    type_ensembl = bool(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z0-9]*_)[A-Z]{1,2}\d{11}', inp))
 
     if type_uniprot:
-        vals = get_uniprot(inp)
+        vals = get_uniprot([inp])
         res = uniprot_parse_response(vals)
 
-        for i in inp:
+        for i in [inp]:
             print(i)
             print('organism:', res[i]['organism'])
             print('geneInfo:', res[i]['geneInfo'])
@@ -102,10 +102,10 @@ def database_explorer(inp: list):
             print('type:', res[i]['type'], "\n")
         return "UNIPROT", res
     elif type_ensembl:
-        vals = get_ensembl(inp)
+        vals = get_ensembl([inp])
         res = ensembl_parse_response(vals)
         
-        for i in inp:
+        for i in [inp]:
             print(i)
             print('organism:', res[i]['organism'])
             print('geneInfo:', res[i]['geneInfo'])
