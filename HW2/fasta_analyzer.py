@@ -4,6 +4,10 @@ import json
 from Bio import SeqIO
 import subprocess
 
+#dealing with wd paths, possibly remove if using absolute path
+import os
+os.chdir(os.path.dirname(__file__))
+
 # HW 2_1
 
 # UNIPROT
@@ -46,7 +50,7 @@ def ensembl_parse_response(resp: dict):
         species = val['species']
 
         if "display_name" in val:
-            gene = val['description']
+            gene = val['display_name']
         elif "description" in val:
             gene = val['description']
         else:
@@ -64,14 +68,24 @@ def ensembl_parse_response(resp: dict):
     return output
 
 # Get database query
-def database_match(inp: list):
+def database_match(inp):
     seq = list()
     fasta = dict()
     description = dict()
+
     for i in inp:
-        seq += [re.search(r'(?<=\|).*(?=\|)', str(i.id)).group()]
-        fasta[seq[-1]] = i.seq 
-        description[seq[-1]] = i.description
+        print("###################")
+        i_id = str(i.id)
+        print(i_id)
+        #very, very apologize for that spagetti-code
+        seq_id=re.search("([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})|((ENS[A-Z]{0,3}|MGP_[a-zA-Z0-9]*_)[A-Z]{1,2}\d{11})", i_id)
+        if bool(seq_id):
+            print("Parsed to:", seq_id.group())
+            seq += [seq_id.group()]
+            fasta[seq[-1]] = i.seq 
+            description[seq[-1]] = i.description
+        else:
+            print("Error format fasta!")
 
     type_uniprot = all(re.fullmatch("[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}", ID) for ID in seq)
     type_ensembl = all(re.fullmatch('(ENS[A-Z]{0,3}|MGP_[a-zA-Z0-9]*_)[A-Z]{1,2}\d{11}', ID) for ID in seq)
@@ -117,7 +131,6 @@ def database_explorer(inp: list):
 
 # HW 2_2
 def seqkit_call(path):
-    #path = "hw_file1.fasta"
 
     seqkit = subprocess.run(("seqkit", "stats", path, "-a"),
                             capture_output=True,
@@ -139,7 +152,6 @@ def seqkit_call(path):
         return(tmp['type'])
 
 def biopython_parser(path):
-    path = "hw_file1.fasta"
     sequences = SeqIO.parse(path, "fasta")
 
     d1, d2, seq, description, fasta = database_match(sequences)
